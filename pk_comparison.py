@@ -76,7 +76,7 @@ for i in range(nxi):
 		cut_cat(pp_cat,ncut,Lag)
        
 	pp_cat = folder+f[i]+"_"+str(ncut)+"_"+str(Lag)
-	print "DEBUG", pp_cat
+	print "Running on: ", pp_cat
        #powerspectra <mergedfile> <outfile> <Lbox in [Mpc]> 
        #             <nmesh> <fmt=: 0=peaks, 1=field>
         os.system('mpirun -np '+str(nproc)+' ../powerspectra '+pp_cat+" "+pkfile+" "+str(Lbox)+" "+str(nmesh)+" "+str(fmt)+" > tmp.log")
