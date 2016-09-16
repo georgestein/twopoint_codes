@@ -15,7 +15,7 @@ contains
 
     implicit none
 
-    real, allocatable:: powfileIO(:,:), corrfileIO(:,:),sigma2fileIO(:,:)     
+    double precision, allocatable:: powfileIO(:,:), corrfileIO(:,:),sigma2fileIO(:,:)     
 
     if(myid==0) then
        allocate(powfileIO(n,2))

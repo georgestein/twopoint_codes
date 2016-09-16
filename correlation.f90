@@ -69,39 +69,7 @@ CONTAINS
     !=====================================================================
     ! EXCUTABLE BEGIN
    
-    !---------------------------------------------------------------------
-    ! DO THE FFT
-    !---------------------------------------------------------------------
-
-! KEEP COMPLEX FIELD AFTER PK INSTEAD OF C2R and R2C
-
-!    sigmal=0.
-!    do k=1,local_nz
-!       do j=1,n
-!          do i=1,n
-!             index = int((k-1)*n+j-1,8)*n2p1+i ! 1D INDEX 
-!             sigmal = sigmal + delta(index)**2
-!          enddo
-!       enddo
-!    enddo
-!    sigmal=sigmal/real(n)**3
-!    call mpi_allreduce(sigmal,sigma,1,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
-!    if(myid==0) write(*,101) sigma
-
-!    if(myid==0) call timer_begin            
-
-!    call fft_mpi(plan,delta,total_local_sizes)
-
-!    if(myid==0) then
-!       timing_diagnostics_code='corr_fftw real2complex'
-!       call timer_end
-!    endif
-
-!    delta = delta / real(n)**3
-    
-!    call mpi_barrier(mpi_comm_world,ierr)  
-
-!    if(myid==0) call timer_begin            
+    ! KEEP COMPLEX FIELD AFTER PK INSTEAD OF C2R and R2C
 
     !---------------------------------------------------------------------
     ! SQUARE THE FIELD
@@ -151,9 +119,9 @@ CONTAINS
     ! SPHERICALLY AVERAGE XI
     !---------------------------------------------------------------------
 
-    rrmin = 5.0   !dr/2
-    rrmax = 200.0 !dr*n/2+dr/2 
-    nrbin = 100
+    rrmin = dr
+    rrmax = dr*n/2 
+    nrbin = n
 
     lrrmin = log10(rrmin)
     lrrmax = log10(rrmax)
@@ -161,9 +129,10 @@ CONTAINS
     drb = (rrmax-rrmin) / nrbin
     dlr = (lrrmax-lrrmin) / nrbin
 
-    allocate(corr_1d(nrbin))
-    allocate(corr_1dl(nrbin))
-    allocate(corr_inbinl(nrbin))
+    if(.not.allocated(corr_1d))     allocate(corr_1d(nrbin))
+    if(.not.allocated(corr_1dl))    allocate(corr_1dl(nrbin))
+    if(.not.allocated(corr_inbin))  allocate(corr_inbin(nrbin))
+    if(.not.allocated(corr_inbinl)) allocate(corr_inbinl(nrbin))
 
     corr_1dl    = 0.
     corr_inbinl = 0
@@ -210,22 +179,17 @@ CONTAINS
     !free up delta
     deallocate(delta)
 
-    call mpi_allreduce(sigmal,sigma,1,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
-
+    call mpi_allreduce(sigmal     ,sigma     ,1    ,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
+    call mpi_allreduce(corr_1dl   ,corr_1d   ,nrbin,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
+    call mpi_allreduce(corr_inbinl,corr_inbin,nrbin,mpi_integer         ,mpi_sum,mpi_comm_world,ierr)
     call mpi_barrier(mpi_comm_world,ierr)
-    corr_1d=0.
 
-    do i=1,nk/2
-       corr_1d_lval    = corr_1dl(i)
-       corr_inbin_lval = corr_inbinl(i)
-       call mpi_allreduce(corr_1d_lval   ,corr_1d_val   ,1,mpi_double_precision   ,mpi_sum,mpi_comm_world,ierr)
-       call mpi_allreduce(corr_inbin_lval,corr_inbin_val,1,mpi_integer,mpi_sum,mpi_comm_world,ierr)
-       call mpi_barrier(mpi_comm_world,ierr)
-       if(corr_inbin_val.ne.0) corr_1d(i) = corr_1d_val / real(corr_inbin_val)
-!       corr_1d(i) = corr_1d_val
+    if(myid==0) then
+    do i=1,nrbin
+       if (corr_inbin(i).ne.0) corr_1d(i) = corr_1d(i)/corr_inbin(i)
     enddo
-
-    call mpi_barrier(mpi_comm_world,ierr)                                                                                                                                                                  
+    endif
+   
     if(myid==0) then
        timing_diagnostics_code='Spherically average correlation'
        call timer_end

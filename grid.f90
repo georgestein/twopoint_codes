@@ -9,7 +9,7 @@ module grid
 
   real, allocatable :: delta(:),delta_sub(:),delta_sub_local(:)
 
-  integer(i8b) i,j,k,n,fmt
+  integer(i8b) i,j,k,ii,jj,kk,n,fmt,dngrid,nin
   real dx,boxsize,local_z_origin
   integer(i8b) offset,length,index
   integer total_sub_size    
@@ -26,8 +26,9 @@ module grid
   real dr,d3r,rrmin, rrmax, drb, lrrmin,lrrmax, dlr
 
 !from ng_grid
-  real, allocatable :: pk_1d(:), kpk_1d(:), R_sigma(:), corr_1d(:)
-  double precision, allocatable :: sigma2(:), sigma2l(:)
+  real, allocatable :: kpk_1d(:), R_sigma(:)
+  integer, allocatable :: pk_inbin(:), corr_inbin(:)
+  double precision, allocatable :: sigma2(:), sigma2l(:),pk_1d(:),corr_1d(:)
   real Rmin, Rmax, Rbinstep, rho_crit, omegaM_in, Rsmooth
   integer numRbin
   integer nk, ibin, nrbin

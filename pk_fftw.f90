@@ -41,7 +41,6 @@ MODULE pk_fftw
   double precision sigma,sigmal
   double precision avg,avgl
   double precision sigma2lint
-  integer pk_inbin_val,pk_inbin_lval
 
 
   complex ctemp
@@ -130,6 +129,7 @@ CONTAINS
 
     if(.not.allocated(pk_1d))     allocate(pk_1d(nk))
     if(.not.allocated(pk_1dl))    allocate(pk_1dl(nk))
+    if(.not.allocated(pk_inbin))  allocate(pk_inbin(nk))
     if(.not.allocated(pk_inbinl)) allocate(pk_inbinl(nk))
 
     pk_1dl=0.
@@ -182,23 +182,18 @@ CONTAINS
        enddo
     enddo
 
+    call mpi_allreduce(sigmal   ,sigma   ,1      ,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
+    call mpi_allreduce(sigma2l  ,sigma2  ,numRbin,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
+    call mpi_allreduce(pk_1dl   ,pk_1d   ,nk     ,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
+    call mpi_allreduce(pk_inbinl,pk_inbin,nk     ,mpi_integer         ,mpi_sum,mpi_comm_world,ierr)
+    call mpi_barrier(mpi_comm_world,ierr)
 
-    call mpi_allreduce(sigmal,sigma,1,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
-
-    call mpi_allreduce(sigma2l,sigma2,numRbin,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
-    call mpi_barrier(mpi_comm_world,ierr)                                                                                                                                                                  
-    pk_1d=0.
-
+    if(myid==0) then
     do i=1,nk
-       pk_1d_lval = pk_1dl(i)
-       pk_inbin_lval = pk_inbinl(i)
-       call mpi_allreduce(pk_1d_lval   ,pk_1d_val   ,1,mpi_double_precision   ,mpi_sum,mpi_comm_world,ierr)
-       call mpi_allreduce(pk_inbin_lval,pk_inbin_val,1,mpi_integer,mpi_sum,mpi_comm_world,ierr)
-       call mpi_barrier(mpi_comm_world,ierr)
-       if(pk_inbin_val.ne.0) pk_1d(i) = pk_1d_val / real(pk_inbin_val)
+       if (pk_inbin(i).ne.0) pk_1d(i) = pk_1d(i)/real(pk_inbin(i))
     enddo
-    
-    call mpi_barrier(mpi_comm_world,ierr)                                                                                                                                                                  
+    endif
+
     !---------------------------------------------------------------------
     ! IMPORTANT!!! IN COSMOLOGICAL CONVENTION, 
     !   variance per dlnk = Delta(k) = k^3*p_cosmo(k)/(2pi^2).

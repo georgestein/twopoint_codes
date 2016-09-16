@@ -63,7 +63,7 @@ program external_field
 
   if(iargc().lt.5) then
      if(myid==0) write(*,99)
-99   format('usage: powerspectra <mergedfile> <outfile> <Lbox in [Mpc]> <nmesh> <fmt=: 0=peaks, 1=field>')
+99   format('usage: powerspectra <mergedfile> <outfile> <Lbox in [Mpc]> <nmesh> <fmt=: 0=peaks, 1=field> <downgrid factor> ')
      call mpi_finalize(ierr)  
      stop 
   endif
@@ -73,6 +73,9 @@ program external_field
   boxsize = r4arg(3,1.e2)
   n       = i4arg(4,256)
   fmt     = i4arg(5,0)
+  dngrid  = i4arg(6,1)
+
+  n = n/dngrid
 
   gridsize = n
 
@@ -161,7 +164,6 @@ program external_field
   endif
 
   call mpi_finalize(ierr)
-  stop
 
  11 format(/,3x,61('-'),/,3x,'Power Spectra running on',/,&
          3x,i0.2,'.',i0.2,'.',i4,1x,'at ',&
