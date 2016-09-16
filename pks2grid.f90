@@ -19,21 +19,26 @@ contains
     real xoni,yoni,zoni,RTHi,idum
     if(myid==0) call timer_begin
 
-    open(4, file=mergedfile,form='binary')
+    open(4, file=mergedfile,access='stream')
 !    read(4) (idum,j=1,2),Non
     read(4) Non
     close(4)
 
     if(myid==0) write(*,101) Non
     !read in old ppruns
-!    open(4, file=mergedfile,form='binary')
+!    open(4, file=mergedfile,access='stream')
 !    read(4) Non,(idum,j=1,3),&
 !          (xon(i),yon(i),zon(i),(idum,j=1,4),&
 !           RTH(i),(idum,j=1,12),i=1,Non)
 !    close(4)
 
     !new ppruns
-    open(4, file=mergedfile,form='binary')
+    open(4, file=mergedfile,access='stream')
+    read(4) Non,RTHmax,redshiftin, &
+          (xon(i),yon(i),zon(i),(idum,j=1,3),&
+           RTH(i),(idum,j=1,16),i=1,Non)
+    close(4)
+
     delta = 0.0
     read(4) Non,RTHmax,redshiftin
     do j=1,Non
