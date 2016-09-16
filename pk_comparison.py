@@ -1,3 +1,4 @@
+#/usr/bin/env python
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as py
@@ -5,6 +6,7 @@ import numpy as np
 import struct 
 import sys
 import os
+import subprocess
 #from mpi4py import MPI
 
 #mpirank=MPI.COMM_WORLD.Get_rank()
@@ -18,8 +20,10 @@ ncut    = int(sys.argv[5])
 Lag     = int(sys.argv[6])
 shuff   = int(sys.argv[7])
 folder  = str(sys.argv[8]) 
-nproc   = int(sys.argv[9])
+dirout  = str(sys.argv[9]) 
+nproc   = int(sys.argv[10])
 
+dirout=dirout+"/"
 def cut_cat(pp_cat,ncut,Lag):
 
         pkfile_in = open(pp_cat,"rb")
@@ -31,6 +35,8 @@ def cut_cat(pp_cat,ncut,Lag):
         npkdata   = outnum*Non
         peakdata  = np.fromfile(pkfile_in, dtype=np.float32, count=npkdata)
         peakdata  = np.reshape(peakdata,(Non,outnum))
+
+	pkfile_in.close()
 
         #Sort by Rth
         peakdata = peakdata[peakdata[:,6].argsort()[::-1]]
@@ -53,14 +59,25 @@ def cut_cat(pp_cat,ncut,Lag):
 
 
 #Get all merged files
-f = os.listdir(folder)
-f = [s for s in f if "merge" in s]
-f = [s for s in f if "shuffle" not in s]
-f = [s for s in f if "0000" not in s]
-f = sorted(f)
+if fmt==0:
+	folder = folder+'output/'
+	f = os.listdir(folder)
+	f = [s for s in f if "merge" in s]
+	f = [s for s in f if "shuffle" not in s]
+	f = [s for s in f if "0000" not in s]
+	f = sorted(f)
+	seeds = [x[-5:] for x in f]
 
-for i in range(nxi):
-	seed = int(f[i][-5:]) 
+if fmt==1:
+	folder = folder+'fields/'
+	f = os.listdir(folder)
+	f = sorted(f)
+	seeds = [x[:5] for x in f]
+
+print f
+print seeds
+for i in range(min(len(f),nxi)):
+	seed = seeds[i] 
 	pp_cat = folder+f[i]
 
 	# Name output file
@@ -70,16 +87,23 @@ for i in range(nxi):
 		pkfile = str(Lbox)+'_n'+str(ncut)+'_pk.'+str(seed)
         if (shuff==1) and (Lag==0):	
 		pkfile = str(Lbox)+'_n'+str(ncut)+'_pk_shuffle.'+str(seed)
+        if (fmt==1):	
+		pkfile = str(Lbox)+'_pkF.'+str(seed)
 
        #If number cut pp file does not exist then make it
-	if os.path.isfile(pp_cat+"_"+str(ncut)+"_"+str(Lag))==False:
-		cut_cat(pp_cat,ncut,Lag)
-       
-	pp_cat = folder+f[i]+"_"+str(ncut)+"_"+str(Lag)
-	print "Running on: ", pp_cat
+	if fmt==0:
+		if os.path.isfile(pp_cat+"_"+str(ncut)+"_"+str(Lag))==False:
+			cut_cat(pp_cat,ncut,Lag)
+
+	#use number cut pp file
+	if fmt==0:
+		pp_cat = folder+f[i]+"_"+str(ncut)+"_"+str(Lag)
+
+	if os.path.isfile(dirout+'power_'+pkfile)==False:
+		print "Running on: ", pp_cat
        #powerspectra <mergedfile> <outfile> <Lbox in [Mpc]> 
        #             <nmesh> <fmt=: 0=peaks, 1=field>
-        os.system('mpirun -np '+str(nproc)+' ../powerspectra '+pp_cat+" "+pkfile+" "+str(Lbox)+" "+str(nmesh)+" "+str(fmt)+" > tmp.log")
-
+		subprocess.call('mpirun -np '+str(nproc)+' powerspectra '+pp_cat+' '+pkfile+' '+str(Lbox)+' '+str(nmesh)+' '+str(fmt)+' 2>> '+dirout+str(ncut)+'_'+str(Lag)+'.stderr' + ' 1>> '+dirout+str(ncut)+'_'+str(Lag)+'.stdout', shell=True)
+		subprocess.call('mv *'+pkfile+' '+dirout,shell=True)
 
 
