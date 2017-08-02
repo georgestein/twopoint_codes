@@ -16,9 +16,9 @@ contains
     implicit none
 
     double precision, allocatable:: powfileIO(:,:), corrfileIO(:,:),sigma2fileIO(:,:)     
-
+    real kout
     if(myid==0) then
-       allocate(powfileIO(n,2))
+       allocate(powfileIO(nk,3))
        allocate(corrfileIO(nrbin,2))
        allocate(sigma2fileIO(numRbin,2))
 
@@ -30,17 +30,23 @@ contains
        enddo
        close(2)
 
-       open(unit=1,file='power_'//outcode)
+
+       open(unit=1,file='power_'//outcode,status='unknown',form='formatted')
+       write(1,*) Nhalo
        do i=1,nk
-          powfileIO(i,2) = pk_1d(i)
+
+          !get kbin
           if(bintype=='lin') then
-             powfileIO(i,1) = kmin+dkb*(i-1)          
+             kout = kmin+dkb*(i-1)          
           elseif(bintype=='log') then
-             powfileIO(i,1) = 10**(lkmin+dlk*(i-1))          
+             kout = 10**(lkmin+dlk*(i-1))          
           endif
-          write(1,'(E14.7,x,E14.7)') powfileIO(i,1:2)!e10.7
+
+          write(1,'(2E14.7,I8)') kout, pk_1d(i), pk_inbin(i)
+
        enddo       
        close(1)
+
 
        open(unit=3,file='correlation_'//outcode)
        do i=1,nrbin

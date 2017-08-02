@@ -1,5 +1,6 @@
 FORMAT=ADD0US
-FFTW_PATH = /home/p/pen/malvarez/fftw-2.1.5
+FFTW_PATH = /scinet/gpc/Libraries/fftw-2.1.5-intel-openmpi/
+#/home/r/rbond/malvarez/fftw-2.1.5
 
 F90         = mpif90
 F77         = mpif77

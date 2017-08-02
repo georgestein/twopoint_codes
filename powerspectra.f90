@@ -63,18 +63,21 @@ program external_field
 
   if(iargc().lt.5) then
      if(myid==0) write(*,99)
-99   format('usage: powerspectra <mergedfile> <outfile> <Lbox in [Mpc]> <nmesh> <fmt=: 0=peaks, 1=field> <downgrid factor> ')
+99   format('usage: powerspectra <pksfile1> <outfile> <Lbox in [Mpc]> <nmesh> <fmt=: 0=peaks,1=field, 2=peaks x peaks, 3=field x peaks> <Mmin halo> <pksfile2>')
      call mpi_finalize(ierr)  
      stop 
   endif
      
-  call getarg(1,mergedfile)
+  call getarg(1,mergedfile1)
   call getarg(2,outcode)
   boxsize = r4arg(3,1.e2)
   n       = i4arg(4,256)
   fmt     = i4arg(5,0)
-  dngrid  = i4arg(6,1)
 
+  Minmass = r4arg(6,0.)
+  if(fmt>1) call getarg(7,mergedfile2)
+
+  dngrid = 1     !currently not working for new version
   n = n/dngrid
 
   gridsize = n
@@ -119,7 +122,8 @@ program external_field
   length = int(4*n*n,8)*(local_nz)
 
   allocate(delta(total_local_sizes))
-  
+  allocate(delta2(total_local_sizes))
+
   n12=n/2
   n21=n12+1
   n2p1=2*(n12+1)
@@ -145,8 +149,20 @@ program external_field
 
   if(fmt==0) then 
      call gridpks
+     delta2 = delta
+
   elseif(fmt==1) then
      call readfield
+     delta2 = delta
+
+  elseif(fmt>1) then      
+     call gridpks              
+     delta2 = delta  
+
+     mergedfile1 = mergedfile2
+     if(fmt==2) call gridpks   !load mergedfile2 into delta
+     if(fmt==3) call readfield 
+
   endif
   call pk1d
   call correlate

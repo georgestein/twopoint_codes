@@ -17,44 +17,31 @@ contains
     integer i,j,k
     integer xpki,ypki,zpki
     real xoni,yoni,zoni,RTHi,idum
-    if(myid==0) call timer_begin
 
-    open(4, file=mergedfile,access='stream')
-    read(4) Non
-    close(4)
-
-    if(myid==0) write(*,101) Non
-
-    !read in old ppruns
-!    open(4, file=mergedfile,access='stream')
-!    read(4) Non 
-!    close(4)
-
-    !new ppruns
-!    open(4, file=mergedfile,access='stream')
-!    read(4) Non,RTHmax,redshiftin, &
-!          (xon(i),yon(i),zon(i),(idum,j=1,3),&
-!           RTH(i),(idum,j=1,16),i=1,Non)
-!    close(4)
-
-    delta = 0.0
-    open(4, file=mergedfile,access='stream')
+    delta  = 0.0
+    Nhalol = 0
+    open(4, file=mergedfile1,access='stream')
 
     read(4) Non,RTHmax,redshiftin
+    if(myid==0) write(*,101) Non
     do j=1,Non
        read(4) xoni,yoni,zoni,(idum,i=1,3),&
-            RTHi!,(idum,i=1,16)
+            RTHi,(idum,i=1,3)
 
-       xoni = xoni + boxsize/2
-       yoni = yoni + boxsize/2
-       zoni = zoni + boxsize/2
+       xoni = xoni*0.695 + boxsize/2
+       yoni = yoni*0.695 + boxsize/2
+       zoni = zoni*0.695 + boxsize/2
+
        !Periodic wrap
-       if(xoni < 0.0)     xoni = boxsize - xoni
-       if(xoni > boxsize) xoni = xoni - boxsize
-       if(yoni < 0.0)     yoni = boxsize - yoni
-       if(yoni > boxsize) yoni = yoni - boxsize
-       if(zoni < 0.0)     zoni = boxsize - zoni
-       if(zoni > boxsize) zoni = zoni - boxsize
+       xoni = mod(xoni+boxsize,boxsize)
+       yoni = mod(yoni+boxsize,boxsize)
+       zoni = mod(zoni+boxsize,boxsize)
+
+       mass = 4*3.14159265359/3 * RTHi**3 * 2.775e11 * 0.695**2 * 0.285
+       mass = mass * 0.695
+
+       if(mass < Minmass) cycle
+
        xpki = int(xoni/dr)+1
        ypki = int(yoni/dr)+1
        zpki = int(zoni/dr)+1
@@ -66,11 +53,14 @@ contains
           if(index<1.or.index>( ((n-1)*n+n-1)*n2p1+n)) then
              write(*,*) xoni,yoni,zoni,index,xpki,ypki,zpki
           endif
-          mass = 4*3.14159265359/3*RTHi**3 * 2.775e11 * 0.7**2 * 0.3
-          delta(index) = delta(index) + 1 !mass
+          delta(index) = delta(index) + 1
+          Nhalol       = Nhalol + 1
        endif
     enddo
     close(4)
+
+    call mpi_allreduce(Nhalol,Nhalo,1,mpi_integer,mpi_sum,mpi_comm_world,ierr)
+    if(myid==0) write(*,102) Nhalo
 
     meanl = 0.0
     do k=1,local_nz
@@ -101,7 +91,8 @@ contains
 
     return
 
-101 format(/,10x,i0, ' peaks read in',/)
+101 format(/,10x,i0, ' Halos in file: ',/)
+102 format(/,10x,i0, ' Halos after mass cut: ',/)
     end subroutine gridpks
 
 !==================================================================
@@ -118,7 +109,7 @@ contains
       offset_bytes = offset_slab*int(4,8)+1
       
       !read in data
-      open(unit=33,file=mergedfile,access='stream')
+      open(unit=33,file=mergedfile1,access='stream')
       if (dngrid==1) then
          read(33,pos=offset_bytes) (delta(i),i=1,n*n*local_nz)
       else
