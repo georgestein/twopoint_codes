@@ -2,25 +2,21 @@ Directions on how to get correlation functions and powerspectra from halo catalo
 
 # HOW TO RUN:
 
-  1.) Make the binary: 
-    $make
-    source code is located at /home/gstein/src/powerspectra or on gitlab to make the binary yourself 
+  1.) Make the binary - source code is located at /home/gstein/src/powerspectra or on gitlab to make the binary yourself 
 
   2.) Run with:
    ./powerspectra 
 
      usage: powerspectra <pksfile1> <outfile> <Lbox in [Mpc]> <nmesh> <fmt=: 0=peaks, 1=field, 2=peaks x peaks, 3=field x peaks> <Mmin halo> <pksfile2>
 
-  <pksfile1>          file you with to take power spectrum of
-  <outfile>           filename to save output
-  <Lbox in [Mpc]>    
-  <nmesh>             number of cells of FT grid. For fmt=field this must be the same resolution as the field you are trying to read in 
-  <fmt>               0=peaks, 1=field, 2=peaks x peaks, 3=field x peaks 
+     <pksfile1>          file you with to take power spectrum of
+     <outfile>           filename to save output
+     <Lbox in [Mpc]>    
+     <nmesh>             number of cells of FT grid. For fmt=field this must be the same resolution as the field you are trying to read in 
+     <fmt>               0=peaks, 1=field, 2=peaks x peaks, 3=field x peaks 
 
-  <Mmin halo>         Minimum mass of halos you want to keep. Only needed if peaks are used
-  <pksfile2>          if you want a cross correlation (fmt=2 or fmt=3) then give the location of the second file
-
-
+     <Mmin halo>         Minimum mass of halos you want to keep. Only needed if peaks are used
+     <pksfile2>          if you want a cross correlation (fmt=2 or fmt=3) then give the location of the second file
 
 
 
@@ -30,7 +26,9 @@ Directions on how to get correlation functions and powerspectra from halo catalo
 
 
 
-# ######################### OLD CODE, only useful for monte carlo runs ####################
+
+
+#  OLD CODE, only useful for monte carlo runs 
 2.) pk_comparison.py
 3.) doall_xi_pk.sh
 
