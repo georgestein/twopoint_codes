@@ -2,7 +2,7 @@ Directions on how to get correlation functions and powerspectra from halo catalo
 
 # HOW TO RUN:
 
-  1.) Make the binary - source code is located at /home/gstein/src/powerspectra or on gitlab to make the binary yourself 
+  1.) Make the binary - source code is located on scinet at /home/r/rbond/gstein/src/twopoint_codes  or on gitlab to make the binary yourself 
 
   2.) Run with:
    ./powerspectra 
