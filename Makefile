@@ -6,10 +6,9 @@ F90         = mpif90
 F77         = mpif77
 CC          = mpicc
 CC_COMPILE  = $(CC) -c
-F90_OPT     = -O3
+F90_OPT     = -O3 -openmp
 F90_COMPILE = $(F90_OPT) -c
 F77_COMPILE = $(F90_OPT) -c
-
 
 FFTLIB =  -L$(FFTW_PATH)/lib -lsrfftw -lsfftw -lsrfftw_mpi -lsfftw_mpi
 

@@ -75,6 +75,7 @@ CONTAINS
     ! DO THE FFT
     !---------------------------------------------------------------------
     avgl = 0
+    !$omp parallel do reduction(+:avgl)
     do k=1,local_nz
        do j=1,n
           do i=1,n
@@ -83,9 +84,13 @@ CONTAINS
           enddo
        enddo
     enddo
+
     avgl = avgl / real(n)**3
+
     call mpi_allreduce(avgl,avg,1,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
+
     sigmal=0.
+    !$omp parallel do reduction(+:sigmal)
     do k=1,local_nz
        do j=1,n
           do i=1,n
@@ -94,7 +99,9 @@ CONTAINS
           enddo
        enddo
     enddo
+
     sigmal=sigmal/real(n)**3
+
     call mpi_allreduce(sigmal,sigma,1,mpi_double_precision,mpi_sum,mpi_comm_world,ierr)
     if(myid==0) write(*,101) avg,sqrt(sigma)
 
@@ -148,6 +155,7 @@ CONTAINS
     sigmal=0.
     sigma2l=0.
 
+    !$omp parallel do reduction(+:sigmal, sigma2l, pk_1dl, pk_inbinl)
     do k=1,local_nz
        zk=(k+local_z_start-1)*dk
        if(k+local_z_start.gt.n12) zk=zk-kmax

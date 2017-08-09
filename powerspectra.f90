@@ -25,6 +25,9 @@ program external_field
   use correlation
   use pks2grid
   use pktable
+
+  use omp_lib
+
   !-----------------------------------------------------------------------
   ! IMPLICIT STATEMENT
   !-----------------------------------------------------------------------
@@ -94,6 +97,15 @@ program external_field
   if(myid==0) write(*,11) dnt_values(3),dnt_values(2),&
        dnt_values(1),dnt_values(5),dnt_values(6),&
        dnt_values(7),dnt_zone
+
+  !$omp parallel
+  !$omp master
+  if(myid==0) then
+     write(*,*) 'Running on ', omp_get_num_threads(), ' OpenMP threads'
+     write(*,*)
+  endif
+  !$omp end master
+  !$omp end parallel
 
   ! ----------------------------------------------------------------------
   ! ALLOCATE AND DETERMINE LOCAL SIZES FROM PLAN
