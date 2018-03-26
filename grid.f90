@@ -7,7 +7,7 @@ module grid
   character *128 code, outcode
   character *128 mergedfile1, mergedfile2, bintype
   real Minmass
-  integer Nhalo, Nhalol
+  integer Nhalo, Nhalol, Nhalocut
 
   real, allocatable :: delta(:),delta_sub(:),delta_sub_local(:)
   real, allocatable :: delta2(:),delta2_sub(:),delta2_sub_local(:)

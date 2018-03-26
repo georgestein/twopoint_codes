@@ -7,7 +7,7 @@ Directions on how to get correlation functions and powerspectra from halo catalo
   2.) Run with:
    ./powerspectra 
 
-     usage: powerspectra <pksfile1> <outfile> <Lbox in [Mpc]> <nmesh> <fmt=: 0=peaks, 1=field, 2=peaks x peaks, 3=field x peaks> <Mmin halo> <pksfile2>
+     usage: powerspectra <pksfile1> <outfile> <Lbox in [Mpc]> <nmesh> <fmt=: 0=peaks, 1=field, 2=peaks x peaks, 3=field x peaks> <Mmin halo> <Nhalo cut> <pksfile2>
 
      <pksfile1>          file you with to take power spectrum of
      <outfile>           filename to save output
@@ -16,6 +16,7 @@ Directions on how to get correlation functions and powerspectra from halo catalo
      <fmt>               0=peaks, 1=field, 2=peaks x peaks, 3=field x peaks 
 
      <Mmin halo>         Minimum mass of halos you want to keep. Only needed if peaks are used
+     <Nhalo cut>         Number of halos to use. Assumes the halo catalogue is already ranked in mass.  Only needed if peaks are used
      <pksfile2>          if you want a cross correlation (fmt=2 or fmt=3) then give the location of the second file
 
 

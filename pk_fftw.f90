@@ -109,7 +109,7 @@ CONTAINS
        call timer_end
     endif
 
-    delta = delta / real(n)**3
+    delta  = delta / real(n)**3
     delta2 = delta2 / real(n)**3
 
     call mpi_barrier(mpi_comm_world,ierr)  

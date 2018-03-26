@@ -63,19 +63,19 @@ program external_field
 
   if(iargc().lt.5) then
      if(myid==0) write(*,99)
-99   format('usage: powerspectra <pksfile1> <outfile> <Lbox in [Mpc]> <nmesh> <fmt=: 0=peaks,1=field, 2=peaks x peaks, 3=field x peaks> <Mmin halo> <pksfile2>')
+99   format('usage: powerspectra <pksfile1> <outfile> <Lbox in [Mpc]> <nmesh> <fmt=: 0=peaks,1=field, 2=peaks x peaks, 3=field x peaks> <Mmin halo> <Nhalocut> <pksfile2>')
      call mpi_finalize(ierr)  
      stop 
   endif
      
   call getarg(1,mergedfile1)
   call getarg(2,outcode)
-  boxsize = r4arg(3,1.e2)
-  n       = i4arg(4,256)
-  fmt     = i4arg(5,0)
-
-  Minmass = r4arg(6,0.)
-  if(fmt>1) call getarg(7,mergedfile2)
+  boxsize  = r4arg(3,1.e2)
+  n        = i4arg(4,256)
+  fmt      = i4arg(5,0)
+  Minmass  = r4arg(6,0.)
+  Nhalocut = r4arg(7,0.)
+  if(fmt>1) call getarg(8,mergedfile2)
 
   dngrid = 1     !currently not working for new version
   n = n/dngrid
@@ -165,7 +165,7 @@ program external_field
 
   endif
   call pk1d
-  call correlate
+!  call correlate
   call write_pktable
 
   ! ----------------------------------------------------------------------

@@ -16,31 +16,34 @@ contains
     implicit none
     integer i,j,k
     integer xpki,ypki,zpki
-    real xoni,yoni,zoni,RTHi,idum
+    real xoni,yoni,zoni,RTHi,idum,massi
 
     delta  = 0.0
     Nhalol = 0
     open(4, file=mergedfile1,access='stream')
 
     read(4) Non,RTHmax,redshiftin
+    
+    if(Nhalocut>0) Non = Nhalocut !note this assumes input halos are already ranked in mass
+
     if(myid==0) write(*,101) Non
     do j=1,Non
        read(4) xoni,yoni,zoni,(idum,i=1,3),&
-            RTHi,(idum,i=1,3)
+            RTHi,(idum,i=1,4)
+       read(4) xoni,yoni,zoni,massi
 
-       xoni = xoni*0.695 + boxsize/2
-       yoni = yoni*0.695 + boxsize/2
-       zoni = zoni*0.695 + boxsize/2
+       massi = 4./3 * 3.14159 * RTHi**3 * 2.775e11 * 0.25 * 0.7**2
+
+       xoni = xoni + boxsize/2
+       yoni = yoni + boxsize/2
+       zoni = zoni + boxsize/2
 
        !Periodic wrap
        xoni = mod(xoni+boxsize,boxsize)
        yoni = mod(yoni+boxsize,boxsize)
        zoni = mod(zoni+boxsize,boxsize)
 
-       mass = 4*3.14159265359/3 * RTHi**3 * 2.775e11 * 0.695**2 * 0.285
-       mass = mass * 0.695
-
-       if(mass < Minmass) cycle
+       if(massi < Minmass) cycle
 
        xpki = int(xoni/dr)+1
        ypki = int(yoni/dr)+1
@@ -54,6 +57,7 @@ contains
              write(*,*) xoni,yoni,zoni,index,xpki,ypki,zpki
           endif
           delta(index) = delta(index) + 1
+!          delta(index) = delta(index) + massi
           Nhalol       = Nhalol + 1
        endif
     enddo
