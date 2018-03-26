@@ -30,7 +30,6 @@ contains
     do j=1,Non
        read(4) xoni,yoni,zoni,(idum,i=1,3),&
             RTHi,(idum,i=1,4)
-       read(4) xoni,yoni,zoni,massi
 
        massi = 4./3 * 3.14159 * RTHi**3 * 2.775e11 * 0.25 * 0.7**2
 
